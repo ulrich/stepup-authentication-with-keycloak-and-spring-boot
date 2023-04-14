@@ -1,5 +1,6 @@
 package com.reservoircode.stepupauth.resources;
 
+import com.reservoircode.stepupauth.config.stepup.StepupAuthentication;
 import com.reservoircode.stepupauth.domain.User;
 import com.reservoircode.stepupauth.repository.UserRepository;
 import com.reservoircode.stepupauth.resources.views.UserView;
@@ -52,6 +53,7 @@ public class UserResource {
     }
 
     @DeleteMapping
+    @StepupAuthentication
     public ResponseEntity<Void> delete(@RequestParam String email) {
         userRepository.deleteUserByEmail(email);
 
