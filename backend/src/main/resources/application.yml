@@ -3,5 +3,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak:8080/realms/stepup
-          jwk-set-uri: http://keycloak:8080/realms/stepup/protocol/openid-connect/certs
+          client-id: user-client
+          issuer-uri: http://172.30.0.2:8080/realms/stepup
+          jwk-set-uri: http://172.30.0.2:8080/realms/stepup/protocol/openid-connect/certs

@@ -4,8 +4,8 @@
 
 Add a simple Spring boot app with the convenience dependencies.
 
-- The best way to generate an Ready-to-run application in Java is to use
-the [Spring boot initializr](https://start.spring.io/).
+- The best way to generate a Ready-to-run application in Java is to use,
+  the [Spring boot initializr](https://start.spring.io/).
 
 By the way we need to enroll the following dependencies:
 
@@ -16,7 +16,7 @@ By the way we need to enroll the following dependencies:
 - Lombok
 - Testcontainers
 
-The following for this introduction will use Java 17 and Maven (of course).
+The followings for this introduction will use Java 17 and Maven (of course).
 
 ### The minimum implementation
 
@@ -24,7 +24,7 @@ The reader should accept that this app doesn't fill the best practice expected f
 
 ## Plug the backend to Keycloak
 
-Obviously, we will use Docker and Compose to led this tutorial.
+Obviously, we will use Docker and Compose to lead this tutorial.
 
 ### Create the Docker Compose stack
 
@@ -44,7 +44,7 @@ RUN apt-get update && \
 COPY pom.xml .
 COPY /src src
 
-RUN mvn clean package -P ci -DskipTests
+RUN mvn clean package -DskipTests
 
 # Run Container
 FROM openjdk:17
@@ -67,7 +67,6 @@ services:
     volumes:
       - ./keycloak/config:/opt/keycloak/data/import
     environment:
-      START_MODE: start-dev
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HOSTNAME: localhost
@@ -86,13 +85,13 @@ networks:
   keycloak-net: { }
 ```
 
-### Create the Keycloak stepup configuration realm
+### Create the Keycloak the stepped-up configuration realm
 
-The detailed configuration can be found in this the [keycloak/config/realm.json](./keycloak/config.realm.json) file, but
-we can highlight some points:
+The detailed configuration can be found in this the [keycloak/config/realm.json](../keycloak/config/stepup-realm.json)
+file, but we can highlight some points:
 
-- The client `user-client` is mandated for delivering an `access token` to the user
-- The frontend-url property has necessary to be set to http://keycloak:8080 for the issuer claim value
+- The client `user-client` is mandated for delivering an `access token` to the user,
+- The frontend-url property has necessary to be set to http://172.30.0.2:8080 for the issuer claim value.
 
 ### Create the OAuth2 security layer
 
@@ -109,8 +108,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak:8080/realms/stepup
-          jwk-set-uri: http://keycloak:8080/realms/stepup/protocol/openid-connect/certs
+          issuer-uri: http://172.30.0.2:8080/realms/stepup
+          jwk-set-uri: http://172.30.0.2:8080/realms/stepup/protocol/openid-connect/certs
 ```
 
 - In the `SecurityConfiguration.java` file we need to describe a basic configuration indicates how to handle the
@@ -147,13 +146,16 @@ At this point we can run the Compose stack:
 ❯ docker compose up --build
 ```
 
-Open a terminal and test the configuation.
+To be note that the client secret was generated during this documentation and located in the `stepup-realm.json` file.
+
+Open a terminal and test the configuration.
 
 - Get a valid access token from Keycloak
 
 ```shell
 ❯ TOKEN=`curl -XPOST 'http://localhost:9080/realms/stepup/protocol/openid-connect/token' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'client_secret=6AurffbSrQ4yaGOl2TE7nvdveKwM2CB0' \
         --data-urlencode 'client_id=user-client' \
         --data-urlencode 'grant_type=password' \
         --data-urlencode 'username=ulrich' \
@@ -163,7 +165,7 @@ Open a terminal and test the configuation.
 - Test an authenticated access
 
 ```shell
-❯ curl -i "http://localhost:8080/user?email=foo@gmail.com" \                                 
+❯ curl -i "http://localhost:8080/user?email=foo@gmail.com" \
         --header "Authorization: Bearer $TOKEN"
 ```
 
@@ -205,3 +207,7 @@ X-Frame-Options: DENY
 Content-Length: 0
 Date: Mon, 10 Apr 2023 19:54:26 GMT
 ```
+
+## My step-up implementation for Spring Boot
+
+Obviously, we will use Docker and Compose to led this tutorial.

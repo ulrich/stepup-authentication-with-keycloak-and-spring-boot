@@ -1,4 +1,4 @@
-package com.reservoircode.stepupauth.security;
+package com.reservoircode.stepupauth.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

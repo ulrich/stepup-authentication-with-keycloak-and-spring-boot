@@ -9,7 +9,7 @@ RUN apt-get update && \
 COPY pom.xml .
 COPY /src src
 
-RUN mvn clean package -P ci -DskipTests
+RUN mvn clean package -DskipTests
 
 # Run Container
 FROM openjdk:17

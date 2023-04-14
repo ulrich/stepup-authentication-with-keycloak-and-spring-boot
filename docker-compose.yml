@@ -8,7 +8,6 @@ services:
     volumes:
       - ./keycloak/config:/opt/keycloak/data/import
     environment:
-      START_MODE: start-dev
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HOSTNAME: localhost
