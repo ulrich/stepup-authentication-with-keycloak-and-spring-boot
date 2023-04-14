@@ -47,7 +47,7 @@ COPY /src src
 RUN mvn clean package -DskipTests
 
 # Run Container
-FROM openjdk:17
+FROM amazoncorretto:17
 
 COPY --from=build /app/target/**.jar app.jar
 ```
@@ -85,6 +85,24 @@ networks:
   keycloak-net: { }
 ```
 
+- Resolve the Keycloak hostname in your local hosts file for Keycloak
+
+```shell
+❯ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stepup-keycloak
+172.22.0.2
+❯ cat /etc/hosts
+172.22.0.2	stepup-keycloak
+```
+- 
+- Resolve the Keycloak hostname in your local hosts file for the backend
+
+```shell
+❯ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' stepup-backend
+172.22.0.3
+❯ cat /etc/hosts
+172.22.0.3	stepup-backend
+```
+
 ### Create the Keycloak the stepped-up configuration realm
 
 The detailed configuration can be found in this the [keycloak/config/realm.json](../keycloak/config/stepup-realm.json)
@@ -108,8 +126,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://172.30.0.2:8080/realms/stepup
-          jwk-set-uri: http://172.30.0.2:8080/realms/stepup/protocol/openid-connect/certs
+          client-id: user-client
+          issuer-uri: http://stepup-keycloak:8080/realms/stepup
+          jwk-set-uri: http://stepup-keycloak:8080/realms/stepup/protocol/openid-connect/certs
 ```
 
 - In the `SecurityConfiguration.java` file we need to describe a basic configuration indicates how to handle the
@@ -153,7 +172,7 @@ Open a terminal and test the configuration.
 - Get a valid access token from Keycloak
 
 ```shell
-❯ TOKEN=`curl -XPOST 'http://localhost:9080/realms/stepup/protocol/openid-connect/token' \
+❯ TOKEN=`curl -XPOST 'http://stepup-keycloak:8080/realms/stepup/protocol/openid-connect/token' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'client_secret=6AurffbSrQ4yaGOl2TE7nvdveKwM2CB0' \
         --data-urlencode 'client_id=user-client' \
@@ -165,7 +184,7 @@ Open a terminal and test the configuration.
 - Test an authenticated access
 
 ```shell
-❯ curl -i "http://localhost:8080/user?email=foo@gmail.com" \
+❯ curl -i "http://stepup-backend:8080/user?email=foo@gmail.com" \
         --header "Authorization: Bearer $TOKEN"
 ```
 
@@ -281,7 +300,7 @@ Open a terminal and test the configuration.
 - Get a valid access token from Keycloak
 
 ```shell
-❯ TOKEN=`curl -XPOST 'http://localhost:9080/realms/stepup/protocol/openid-connect/token' \
+❯ TOKEN=`curl -XPOST 'http://stepup-keycloak:8080/realms/stepup/protocol/openid-connect/token' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'client_secret=6AurffbSrQ4yaGOl2TE7nvdveKwM2CB0' \
         --data-urlencode 'client_id=user-client' \
@@ -295,7 +314,7 @@ Open a terminal and test the configuration.
 - Call the delete user resource
 
 ```shell
-❯ curl -i -XDELETE "http://localhost:8080/user?email=foo@gmail.com" \
+❯ curl -i -XDELETE "http://stepup-backend:8080/user?email=foo@gmail.com" \
         --header "Referer: http://localhost:8080" \
         --header "Authorization: Bearer $TOKEN"
 ```
@@ -317,7 +336,7 @@ Content-Type: application/json
 Content-Length: 253
 Date: Fri, 14 Apr 2023 12:02:51 GMT
 
-{"status":"PRECONDITION_FAILED","authenticationUrl":"http://172.30.0.2:8080/realms/stepup/protocol/openid-connect/auth?client_id=user-client&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2F&response_type=code&response_mode=query&scope=openid&acr_values=2"}
+{"status":"PRECONDITION_FAILED","authenticationUrl":"http://stepup-keycloak:8080/realms/stepup/protocol/openid-connect/auth?client_id=user-client&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2F&response_type=code&response_mode=query&scope=openid&acr_values=2"}
 ```
 
 Explanations:
@@ -345,7 +364,7 @@ the `access-token`. This is the final step where the app will receive the `acces
 Proceed to get the new access-token.
 
 ```shell
-TOKEN=`curl -XPOST 'http://172.30.0.2:8080/realms/stepup/protocol/openid-connect/token' \
+TOKEN=`curl -XPOST 'http://stepup-keycloak:8080/realms/stepup/protocol/openid-connect/token' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'grant_type=authorization_code' \
         --data-urlencode 'client_id=user-client' \
@@ -363,7 +382,7 @@ TOKEN=`curl -XPOST 'http://172.30.0.2:8080/realms/stepup/protocol/openid-connect
 It's now possible to call the protected resources with the good level of accreditation.
 
 ```shell
-❯ curl -i -XDELETE "http://localhost:8080/user?email=foo@gmail.com" \
+❯ curl -i -XDELETE "http://stepup-backend:8080/user?email=foo@gmail.com" \
         --header "Referer: http://localhost:8080" \
         --header "Authorization: Bearer $TOKEN"
 ```

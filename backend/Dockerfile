@@ -12,6 +12,6 @@ COPY /src src
 RUN mvn clean package -DskipTests
 
 # Run Container
-FROM openjdk:17
+FROM amazoncorretto:17
 
 COPY --from=build /app/target/**.jar app.jar
