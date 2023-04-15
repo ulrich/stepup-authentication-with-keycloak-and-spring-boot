@@ -25,7 +25,7 @@ import java.util.Optional;
 @Component
 public class StepupAuthenticationInterceptor implements HandlerInterceptor {
 
-    private static final String OTP_SERVER_URI = "%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&response_mode=query&scope=openid&acr_values=%s";
+    private static final String IAM_SERVER_URI = "%s/protocol/openid-connect/auth?client_id=%s&redirect_uri=%s&response_type=code&response_mode=query&scope=openid&acr_values=%s";
 
     private static final String ACR_CLAIM_NAME = "acr";
     private static final String ACR_CLAIM_LEVEL = "2";
@@ -105,6 +105,6 @@ public class StepupAuthenticationInterceptor implements HandlerInterceptor {
         String callback = Optional.ofNullable(request.getHeader(CALLBACK_URL_HEADER)).orElse("/");
         String redirectUri = URLEncoder.encode(referer + callback, StandardCharsets.UTF_8);
 
-        return OTP_SERVER_URI.formatted(issuerUri, clientId, redirectUri, ACR_CLAIM_LEVEL);
+        return IAM_SERVER_URI.formatted(issuerUri, clientId, redirectUri, ACR_CLAIM_LEVEL);
     }
 }
