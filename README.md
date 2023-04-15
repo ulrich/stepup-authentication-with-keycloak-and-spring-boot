@@ -60,6 +60,8 @@ Like the previous Docker configuration the Compose file is a-by-the-book example
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:21.0
+    container_name: stepup-keycloak
+    hostname: stepup-keycloak
     ports:
       - 9080:8080
     networks:
@@ -75,6 +77,8 @@ services:
     depends_on:
       - keycloak
     build: ./backend
+    container_name: stepup-backend
+    hostname: stepup-backend
     ports:
       - 8080:8080
     networks:
